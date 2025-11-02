@@ -18,14 +18,11 @@ import api from './api';
 const Login = () => {
   const navigate = useNavigate();
 
-  // Detectar modo desarrollo (Vite)
-  const DEV_MODE = (import.meta as any).env?.DEV ?? false;
-
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
-    // Autocompletado en desarrollo
-    email: DEV_MODE ? 'test@test.com' : '',
-    password: DEV_MODE ? 'test' : '',
+    // Autocompletado simple con credenciales de ejemplo
+    email: 'test@test.com',
+    password: 'test',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -35,19 +32,16 @@ const Login = () => {
     setError(null);
     setLoading(true);
 
-    if (DEV_MODE) {
-      // Simular inicio de sesión en desarrollo
-      await new Promise((res) => setTimeout(res, 700)); // breve simulación
-      localStorage.setItem('token', 'dev-token-example');
-      // Mensaje amistoso en consola (UI ya muestra alert)
-      console.info(
-        'Inicio de sesión simulado (modo desarrollo). Usuario: test@test.com / test'
-      );
+    // Credenciales de prueba aceptadas localmente
+    if (formData.email === 'test@test.com' && formData.password === 'test') {
+      // Simular login rápido
+      localStorage.setItem('token', 'test-token');
       navigate('/dashboard');
       setLoading(false);
       return;
     }
 
+    // Para cualquier otra credencial, intentar login real mediante la API
     try {
       const res = await api.post('/usuarios/login', {
         email: formData.email,
@@ -71,17 +65,6 @@ const Login = () => {
     } finally {
       setLoading(false);
     }
-
-    /* Si prefieres ver la llamada anterior comentada para referencia:
-    // const res = await fetch('http://localhost:3000/usuarios/login', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({
-    //     email: formData.email,
-    //     password: formData.password,
-    //   }),
-    // });
-    */
   };
 
   return (
@@ -108,13 +91,11 @@ const Login = () => {
             Real Estate App
           </Typography>
 
-          {/* Aviso amigable en modo desarrollo con credenciales autocompletadas */}
-          {DEV_MODE && (
-            <Alert severity="info" sx={{ mb: 2 }}>
-              Modo desarrollo: se han autocompletado credenciales de prueba — usuario:{' '}
-              <strong>test@test.com</strong> | contraseña: <strong>test</strong>.
-            </Alert>
-          )}
+          {/* Aviso amistoso indicando las credenciales de ejemplo */}
+          <Alert severity="info" sx={{ mb: 2 }}>
+            Puedes usar las credenciales de prueba: usuario{' '}
+            <strong>test@test.com</strong> y contraseña: <strong>test</strong>.
+          </Alert>
 
           <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
             <TextField
@@ -139,7 +120,7 @@ const Login = () => {
               label="Contraseña"
               type={showPassword ? 'text' : 'password'}
               id="password"
-              autoComplete={DEV_MODE ? 'on' : 'current-password'}
+              autoComplete="current-password"
               value={formData.password}
               onChange={(e) =>
                 setFormData({ ...formData, [e.target.name]: e.target.value })
